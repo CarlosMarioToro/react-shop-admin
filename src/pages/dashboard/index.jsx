@@ -1,20 +1,10 @@
-import Pagination from "@components/pagination";
-import Paginate from "@hooks/paginate";
-import useFetch from "@hooks/useFetch";
-import endPoints from "@services/api";
+import Pagination from '@components/Pagination';
+import Paginate from '@hooks/usePaginate';
+import useFetch from '@hooks/useFetch';
+import endPoints from '@services/api';
+import { Chart } from '@common/Chart';
 
-const people = [
-  {
-    name: 'Jane Cooper',
-    title: 'Regional Paradigm Technician',
-    department: 'Optimization',
-    role: 'Admin',
-    email: 'jane.cooper@example.com',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60',
-  },
-];
-
-const PRODUCT_LIMIT = 5;
+const PRODUCT_LIMIT = 10;
 const PRODUCT_OFFSET = 0;
 
 export default function Dashboard() {
@@ -26,12 +16,28 @@ export default function Dashboard() {
   const offset = paginate.newOffset;
   const products = allProducts.slice(offset, offset + PRODUCT_LIMIT);
 
-  return (
+  const categoryNames = products?.map((product) => product.category);
+  const categoryCount = categoryNames?.map((category) => category.name);
+
+  const countOccurrences = (arr) => arr.reduce((prev, curr) => ((prev[curr] = ++prev[curr] || 1), prev), {});
+
+  const data = {
+    datasets:[{
+      label: 'Categories',
+      data: countOccurrences(categoryCount),
+      borderWidth: 2,
+      backgroundColor:['#FFBB11','#C0C0C0','#50AF95', '#C3BA2F', '#2A71D0']
+    }]
+  }
+
+  return (    
     <>
+    <Chart className='mb-8 mt-2' chartData={data} />
       <div className="flex flex-col">
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+              <Pagination limit={PRODUCT_LIMIT} offset={offset} total={totalProducts} handlePrev={handlePrev} handleNext={handleNext}></Pagination>
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -89,7 +95,6 @@ export default function Dashboard() {
                   ))}
                 </tbody>
               </table>
-
               <Pagination limit={PRODUCT_LIMIT} offset={offset} total={totalProducts} handlePrev={handlePrev} handleNext={handleNext}></Pagination>
             </div>
           </div>
