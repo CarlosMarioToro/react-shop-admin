@@ -1,6 +1,39 @@
+import { useRef } from "react";
+import { ValidationSchema } from "@common/ValidationShema";
+
 export default function FormProduct() {
+    const formRef = useRef(null);
+
+    const handleSubmit = async (event) => {
+
+        event.preventDefault();
+        //formData captura cada elemento del input
+        const formData = new FormData(formRef.current);
+        //Destructurar los datos
+        const data = {
+            title: formData.get('title'), //Se pasa el nombre del elemento
+            price: parseInt(formData.get('price')), //Se transforma en valor numérico
+            description: formData.get('description'),
+            categoryId: parseInt(formData.get('category')),
+            images: [formData.get('images').name], //Array que contiene string
+        };
+        //console.log(data); //Imprime los datos ingresados
+        //Llamada a ValidationSchema.js
+        const valid = await ValidationSchema.validate(data)
+            .catch(function (err) {
+                let errorValidate = err.errors;
+                let errorMessage = "";
+                for (const [key, value] of Object.entries(errorValidate)) {
+                    console.log(value);
+                    errorMessage = errorMessage.concat(value);
+                }
+                alert(errorMessage);
+            });
+        console.log({ valid }); //Imprime los datos después de la validación
+    };
+
     return (
-        <form>
+        <form ref={formRef} onSubmit={handleSubmit}>
             <div className="overflow-hidden">
                 <div className="px-4 py-5 bg-white sm:p-6">
                     <div className="grid grid-cols-6 gap-6">
@@ -29,6 +62,7 @@ export default function FormProduct() {
                                 type="number"
                                 name="price"
                                 id="price"
+                                min="0"
                                 className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                             />
                         </div>
@@ -43,8 +77,10 @@ export default function FormProduct() {
                                 id="category"
                                 name="category"
                                 autoComplete="category-name"
+                                defaultValue="0"
                                 className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             >
+                                <option value="0" disabled> --Select-- </option>
                                 <option value="1">Clothes</option>
                                 <option value="2">Electronics</option>
                                 <option value="3">Furniture</option>
