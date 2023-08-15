@@ -1,7 +1,8 @@
 import { useRef } from "react";
 import { ValidationSchema } from "@common/ValidationShema";
+import { addProduct } from "@services/api/product";
 
-export default function FormProduct() {
+export default function FormProduct({setOpen, setAlert}) {
     const formRef = useRef(null);
 
     const handleSubmit = async (event) => {
@@ -15,7 +16,8 @@ export default function FormProduct() {
             price: parseInt(formData.get('price')), //Se transforma en valor numérico
             description: formData.get('description'),
             categoryId: parseInt(formData.get('category')),
-            images: [formData.get('images').name], //Array que contiene string
+            images: ["https://picsum.photos/200/300"], //Array que contiene string
+            // images: [formData.get('images').name], 
         };
         //console.log(data); //Imprime los datos ingresados
         //Llamada a ValidationSchema.js
@@ -30,6 +32,22 @@ export default function FormProduct() {
                 alert(errorMessage);
             });
         console.log({ valid }); //Imprime los datos después de la validación
+        addProduct(data).then(() => {
+            setAlert({
+                active: true,
+                message: 'Product added succesfully',
+                type: 'success',
+                autoClose: false,
+            });
+            setOpen (false);
+        }).catch((error) => {
+            setAlert({
+                active: true,
+                message: error.message,
+                type: 'error',
+                autoClose: false,
+            });
+        });
     };
 
     return (

@@ -1,13 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import Modal from '@common/Modal';
 import FormProduct from '@components/FormProduct';
+import axios from 'axios';
+import endPoints from '@services/api';
+import Alert from '@common/alert';
+import useAlert from '@hooks/useAlert';
 
 export default function Products() {
     const [products, setProducts] = useState([]);
     const [open, setOpen] = useState(false);
+    const {alert, setAlert, toggleAlert} = useAlert();
+
+    useEffect(() => {
+        async function getProducts() {
+            const response = await axios.get(endPoints.products.allProducts);
+            setProducts(response.data);
+        }
+        try {
+            getProducts();
+        } catch (error) {
+            console.log(error);
+        }
+    }, [alert])
+
     return (
         <>
+            <Alert alert={alert} handleClose={toggleAlert}/>
             <div className="lg:flex lg:items-center lg:justify-between mb-8">
                 <div className="flex-1 min-w-0">
                     <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">List of Products</h2>
@@ -70,9 +89,9 @@ export default function Products() {
                                                 <div className="text-sm text-gray-900">{product.category.name}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{product.price}</span>
+                                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">$ {product.price}</span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$ {product.id}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.id}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <a href="/edit" className="text-indigo-600 hover:text-indigo-900">
                                                     Edit
@@ -93,7 +112,7 @@ export default function Products() {
                 </div>
             </div>
             <Modal open={open} setOpen={setOpen}>
-                <FormProduct/>
+                <FormProduct setOpen={setOpen} setAlert={setAlert}/>
             </Modal>
         </>
     );
