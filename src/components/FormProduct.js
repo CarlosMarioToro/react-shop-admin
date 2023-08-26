@@ -1,9 +1,12 @@
 import { useRef } from "react";
 import { ValidationSchema } from "@common/ValidationShema";
-import { addProduct } from "@services/api/product";
+import { addProduct, updateProduct } from "@services/api/product";
+import { useRouter } from "next/router";
 
-export default function FormProduct({setOpen, setAlert}) {
+export default function FormProduct({setOpen, setAlert, product}) {
     const formRef = useRef(null);
+
+    const router = useRouter();
 
     const handleSubmit = async (event) => {
 
@@ -19,7 +22,6 @@ export default function FormProduct({setOpen, setAlert}) {
             images: ["https://picsum.photos/200/300"], //Array que contiene string
             // images: [formData.get('images').name], 
         };
-        //console.log(data); //Imprime los datos ingresados
         //Llamada a ValidationSchema.js
         const valid = await ValidationSchema.validate(data)
             .catch(function (err) {
@@ -31,23 +33,29 @@ export default function FormProduct({setOpen, setAlert}) {
                 }
                 alert(errorMessage);
             });
-        console.log({ valid }); //Imprime los datos después de la validación
-        addProduct(data).then(() => {
-            setAlert({
-                active: true,
-                message: 'Product added succesfully',
-                type: 'success',
-                autoClose: false,
-            });
-            setOpen (false);
-        }).catch((error) => {
-            setAlert({
-                active: true,
-                message: error.message,
-                type: 'error',
-                autoClose: false,
-            });
-        });
+
+            if (product) {
+                updateProduct(product.id, data).then((response) => {
+                    router.push('/dashboard/products/')
+                })
+            } else {
+                addProduct(data).then(() => {
+                    setAlert({
+                        active: true,
+                        message: 'Product added succesfully',
+                        type: 'success',
+                        autoClose: false,
+                    });
+                    setOpen (false);
+                }).catch((error) => {
+                    setAlert({
+                        active: true,
+                        message: error.message,
+                        type: 'error',
+                        autoClose: false,
+                    });
+                });
+            }        
     };
 
     return (
@@ -63,6 +71,7 @@ export default function FormProduct({setOpen, setAlert}) {
                                 Title
                             </label>
                             <input
+                                defaultValue={product?.title}
                                 type="text"
                                 name="title"
                                 id="title"
@@ -77,6 +86,7 @@ export default function FormProduct({setOpen, setAlert}) {
                                 Price
                             </label>
                             <input
+                                defaultValue={product?.price}
                                 type="number"
                                 name="price"
                                 id="price"
@@ -95,6 +105,7 @@ export default function FormProduct({setOpen, setAlert}) {
                                 id="category"
                                 name="category"
                                 autoComplete="category-name"
+                                value={product?.category?.id.toString()}
                                 defaultValue="0"
                                 className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             >
@@ -115,6 +126,7 @@ export default function FormProduct({setOpen, setAlert}) {
                                 Description
                             </label>
                             <textarea
+                                defaultValue={product?.description}
                                 name="description"
                                 id="description"
                                 autoComplete="description"
@@ -150,6 +162,7 @@ export default function FormProduct({setOpen, setAlert}) {
                                             >
                                                 <span>Upload a file</span>
                                                 <input
+                                                    defaultValue={product?.images}
                                                     id="images"
                                                     name="images"
                                                     type="file"
